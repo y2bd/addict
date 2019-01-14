@@ -23,3 +23,62 @@ a {
 .App .Loading {
   color: white;
 }
+
+.App .Loader {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  background: rgba(0, 0, 0);
+
+  display: grid;
+  place-items: center center;
+  align-items: center;
+  justify-content: center;
+
+  opacity: 1;
+  transition: opacity 100s ease;
+}
+
+.App .Loader.hidden {
+  opacity: 0;
+  pointer-events: none;
+
+  transition: opacity 2s ease;
+}
+
+.App .Loader p {
+  animation: MoveUpDown 2s ease-in-out infinite;
+}
+
+@keyframes MoveUpDown {
+  0%, 100% {
+    transform: translate(0, -10px);
+  }
+  50% {
+    transform: translate(0, 10px);
+  }
+}
+
+.App .Subreddit {
+  border: none;
+  outline: none;
+  color: white;
+  background: black;
+  font-size: 14px;
+
+  display: inline-block;
+  width: auto;
+  margin-left: 1px;
+}
+
+.App .Subreddit div {
+  display: inline;
+}
+
+.App .Subreddit br {
+  display: none;
+}

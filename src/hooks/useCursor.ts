@@ -1,6 +1,5 @@
 import * as React from "react";
 import PromiseCursor, { PromiseCursorProvider } from "../cursor";
-import useMount from "./useMount";
 
 export interface CursorOptions {
   /**
@@ -15,26 +14,24 @@ export interface CursorOptions {
 
 export default function useCursor<T>(
   cursorProvider: PromiseCursorProvider<T>,
-  options?: CursorOptions
+  options?: CursorOptions,
+  inputs: ReadonlyArray<any> = [],
 ): [T[], () => void, boolean] {
   const [currentCursor, setCurrentCursor] = React.useState<
     PromiseCursor<T> | undefined
   >(undefined);
 
   const [currentData, setCurrentData] = React.useState<T[]>([]);
+  const [loading, setLoading] = React.useState<boolean>(true);
 
-  const [loading, setLoading] = React.useState<boolean>(false);
-
-  const consumeCursor = (provider: PromiseCursorProvider<T>) => {
-    console.log("Loading next");
+  const consumeCursor = (provider: PromiseCursorProvider<T>, disableAdditive = false) => {
     setLoading(true);
 
     provider().then(cursor => {
-      console.log("loaded", provider);
       setLoading(false);
       setCurrentCursor(cursor);
 
-      if (options && options.additive) {
+      if (options && options.additive && !disableAdditive) {
         setCurrentData(currentData.concat(cursor.data));
       } else {
         setCurrentData(cursor.data);
@@ -47,7 +44,11 @@ export default function useCursor<T>(
     [currentCursor, currentData]
   );
 
-  useMount(() => consumeCursor(cursorProvider));
+  React.useEffect(() => {
+    setCurrentData([]);
+    setLoading(true);
+    consumeCursor(cursorProvider, true)
+  }, inputs);
 
   return [currentData, next, loading];
 }
