@@ -51,13 +51,14 @@ export async function list(args: ListArgs): Promise<ListingCursor> {
   const listResponse = await listRaw(args);
 
   return {
+    after: listResponse.data.after,
     data: listResponse.data.children.map(child => child.data),
     next: () =>
       list({
         ...args,
         after: listResponse.data.after,
         count: (args.count || 0) + listResponse.data.dist
-      })
+      }),
   };
 }
 

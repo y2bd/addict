@@ -9,6 +9,7 @@ export async function list(args: ListArgs): Promise<ListingCursor> {
   const listResponse = JSON.parse(listResponseStr) as ListResponse;
 
   return {
+    after: listResponse.data.after,
     data: listResponse.data.children.map(child => child.data),
     next: () =>
       list({

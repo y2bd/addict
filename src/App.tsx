@@ -1,30 +1,21 @@
 import * as React from "react";
 import "./App.css";
 import Post from "./components/Post";
-import useCursor from "./hooks/useCursor";
-import { ListingCursor, Sort } from "./reddit/listing";
-import { list } from "./server/listingProxy";
+import useRecencyCache from './hooks/useRecencyCache';
+import useSubredditPosts from './hooks/useSubredditPosts';
+import { Sort } from "./reddit/listing";
 
 const defaultSubreddit = "frugalmalefashion";
 const sort: Sort = "hot";
 
 const App = () => {
-  const [subInput, setSubInput] = React.useState(defaultSubreddit);
-  const [subreddit, setSubreddit] = React.useState(defaultSubreddit);
+  const [subreddit, setSubreddit] = 
+    useRecencyCache("subreddit", defaultSubreddit, 1000 * 60 * 60 * 24 * 30);
+  const [subInput, setSubInput] = React.useState(subreddit);
 
-  const [posts, loadNextPosts, isLoading] = useCursor(
-    () =>
-      list({
-        sort,
-        subreddit
-      }).then(result => new Promise<ListingCursor>(resolve => {
-        setTimeout(() => resolve(result), 1000);
-      })),
-    {
-      additive: true
-    },
-    [sort, subreddit]
-  );
+  const [subredditOnce] = React.useState(subInput);
+
+  const [posts, loadNextPosts, isLoading] = useSubredditPosts(sort, subreddit);
 
   const loadNext = React.useCallback(
     (evt: React.MouseEvent) => {
@@ -63,7 +54,7 @@ const App = () => {
           defaultValue={subInput}
           ref={subref}
           onInput={onSubInputChange}
-          onKeyDown={onSubInputConfirm}>{defaultSubreddit}</div>
+          onKeyDown={onSubInputConfirm}>{subredditOnce}</div>
         <span> • {sort}</span>
       </p>
       {posts.map(post => (
@@ -74,10 +65,10 @@ const App = () => {
           loading...
         </a>
       ) : (
-        <a href="#nextPosts" className="next" onClick={loadNext}>
-          next
+          <a href="#nextPosts" className="next" onClick={loadNext}>
+            next
         </a>
-      )}
+        )}
       <div className={"Loader " + ((isLoading && posts.length <= 0) ? "" : "hidden")}>
         <p>loading posts...</p>
       </div>
